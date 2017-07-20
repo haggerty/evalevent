@@ -7,8 +7,10 @@
 #include "TCanvas.h"
 #include "TLorentzVector.h"
 #include "TStyle.h"
+#include "TF1.h"
 
 #include <iostream>
+#include <fstream>
 #include <vector>
 
 struct cluster
@@ -156,6 +158,20 @@ Long64_t pizero(TString filename = "*.root", TString pdffile = "pizero.pdf",TStr
     h_pair->Fit("gaus","","",0.0,0.25);
     c1->Print(pdffile+")","pdf portrait");
   }
+
+  TF1 *gfit = (TF1*) h_pair->GetFunction("gaus");
+  Float_t mean  = gfit->GetParameter(1);
+  Float_t sigma = gfit->GetParameter(2);
+
+  // append the fit results to pizero.csv
+
+  ofstream sumfile;
+  sumfile.open("pizero.csv", std::ofstream::app);
+  sumfile << pdffile << "," 
+	  << gfit->GetParameter(1) << "," <<  gfit->GetParError(1) << ","
+	  << gfit->GetParameter(2) << "," <<  gfit->GetParError(2)
+	  << std::endl;
+  sumfile.close();
 
   return total_events;
 }
